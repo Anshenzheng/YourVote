@@ -164,28 +164,9 @@ def vote(room_id):
 def generate_qrcode(room_id):
     room = Room.query.get_or_404(room_id)
     
-    base_url = request.host_url.rstrip('/')
-    voter_url = f"{base_url}/vote/{room_id}"
-    
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(voter_url)
-    qr.make(fit=True)
-    
-    img = qr.make_image(fill_color="black", back_color="white")
-    
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-    
     return jsonify({
-        'qrcode_base64': f"data:image/png;base64,{img_str}",
-        'voter_url': voter_url,
-        'display_url': f"{base_url}/display/{room_id}"
+        'room_id': room_id,
+        'room_name': room.name
     })
 
 

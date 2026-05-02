@@ -7,9 +7,12 @@ import './RoomDetail.css'
 function RoomDetail() {
   const { roomId } = useParams()
   const [room, setRoom] = useState(null)
-  const [qrData, setQrData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState({ voter: false, display: false })
+  
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  const voterUrl = `${origin}/vote/${roomId}`
+  const displayUrl = `${origin}/display/${roomId}`
 
   useEffect(() => {
     loadRoom()
@@ -17,12 +20,8 @@ function RoomDetail() {
 
   async function loadRoom() {
     try {
-      const [roomData, qrData] = await Promise.all([
-        roomApi.get(roomId),
-        roomApi.getQRCode(roomId)
-      ])
+      const roomData = await roomApi.get(roomId)
       setRoom(roomData)
-      setQrData(qrData)
     } catch (err) {
       console.error('加载房间失败:', err)
     } finally {
@@ -123,24 +122,22 @@ function RoomDetail() {
             <h2 className="card-title">📱 投票二维码</h2>
             <p className="qr-desc">让用户扫码进入投票页面</p>
             
-            {qrData && (
-              <div className="qr-container">
-                <QRCodeSVG
-                  value={qrData.voter_url}
-                  size={200}
-                  level="H"
-                  includeMargin={true}
-                />
-              </div>
-            )}
+            <div className="qr-container">
+              <QRCodeSVG
+                value={voterUrl}
+                size={200}
+                level="H"
+                includeMargin={true}
+              />
+            </div>
             
             <div className="link-section">
               <p className="link-label">投票链接</p>
               <div className="link-row">
-                <input type="text" readOnly value={qrData?.voter_url || ''} />
+                <input type="text" readOnly value={voterUrl} />
                 <button
                   className={`btn ${copied.voter ? 'btn-success' : 'btn-secondary'}`}
-                  onClick={() => copyToClipboard(qrData?.voter_url, 'voter')}
+                  onClick={() => copyToClipboard(voterUrl, 'voter')}
                 >
                   {copied.voter ? '已复制' : '复制'}
                 </button>
@@ -160,27 +157,25 @@ function RoomDetail() {
             <div className="link-section">
               <p className="link-label">大屏链接</p>
               <div className="link-row">
-                <input type="text" readOnly value={qrData?.display_url || ''} />
+                <input type="text" readOnly value={displayUrl} />
                 <button
                   className={`btn ${copied.display ? 'btn-success' : 'btn-secondary'}`}
-                  onClick={() => copyToClipboard(qrData?.display_url, 'display')}
+                  onClick={() => copyToClipboard(displayUrl, 'display')}
                 >
                   {copied.display ? '已复制' : '复制'}
                 </button>
               </div>
             </div>
 
-            {qrData && (
-              <a
-                href={qrData.display_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary mt-20"
-                style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
-              >
-                打开大屏展示
-              </a>
-            )}
+            <a
+              href={displayUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary mt-20"
+              style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
+            >
+              打开大屏展示
+            </a>
           </div>
         </div>
 
